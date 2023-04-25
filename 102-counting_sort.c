@@ -1,67 +1,69 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "sort.h"
 
 /**
- * counting_sort - Sorts an array of integers in ascending order using
- * the Counting sort algorithm.
- * @array: The array of integers to sort.
+ * get_max - Get the maximum value in an array of integers.
+ * @array: An array of integers.
  * @size: The size of the array.
+ *
+ * Return: The maximum integer in the array.
  */
+
+int get_max(int *array, int size)
+{
+	int max, k;
+
+	for (max = array[0], k = 1; k < size; k++)
+	{
+		if (array[k] > max)
+			max = array[k];
+	}
+	return (max);
+}
+
+/**
+ * counting_sort - Sort an array of integers in ascending order
+ *                 using the counting sort algorithm.
+ * @array: An array of integers.
+ * @size: The size of the array.
+ *
+ * Description: Prints the counting array after setting it up.
+ */
+
 void counting_sort(int *array, size_t size)
 {
-    unsigned int i, j, k = 0, *count = NULL, *output = NULL;
+	int *count, *sorted, max, k;
 
-    if (!array || size < 2)
-        return;
+	if (array == NULL || size < 2)
+		return;
 
-    /* Find the largest element in the array */
-    for (i = 0; i < size; i++)
-    {
-        if (array[i] > (int) k)
-            k = array[i];
-    }
+	sorted = malloc(sizeof(int) * size);
+	if (sorted == NULL)
+		return;
+	max = get_max(array, size);
+	count = malloc(sizeof(int) * (max + 1));
+	if (count == NULL)
+	{
+		free(sorted);
+		return;
+	}
 
-    /* Allocate memory for the count and output arrays */
-    count = malloc(sizeof(unsigned int) * (k + 1));
-    output = malloc(sizeof(int) * size);
+	for (k = 0; k < (max + 1); k++)
+		count[k] = 0;
+	for (k = 0; k < (int)size; k++)
+		count[array[k]] += 1;
+	for (k = 0; k < (max + 1); k++)
+		count[k] += count[k - 1];
+	print_array(count, max + 1);
 
-    if (!count || !output)
-    {
-        free(count);
-        free(output);
-        return;
-    }
+	for (k = 0; k < (int)size; k++)
+	{
+		sorted[count[array[k]] - 1] = array[k];
+		count[array[k]] -= 1;
+	}
 
-    /* Initialize count array with 0s */
-    for (i = 0; i <= k; i++)
-        count[i] = 0;
+	for (k = 0; k < (int)size; k++)
+		array[k] = sorted[k];
 
-    /* Store the count of each element */
-    for (i = 0; i < size; i++)
-        count[array[i]]++;
-
-    /* Modify the count array to contain the actual position of each element
-     * in the output array */
-    for (i = 1; i <= k; i++)
-        count[i] += count[i - 1];
-
-    /* Build the output array */
-    for (i = size - 1; (int) i >= 0; i--)
-    {
-        output[count[array[i]] - 1] = array[i];
-        count[array[i]]--;
-    }
-
-    /* Copy the sorted output array back to the original array */
-    for (i = 0; i < size; i++)
-        array[i] = output[i];
-
-    /* Print the count array */
-    for (j = 0; j <= k; j++)
-        printf(" %u", count[j]);
-    printf("\n");
-
-    /* Free memory */
-    free(count);
-    free(output);
+	free(sorted);
+	free(count);
 }
